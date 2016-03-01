@@ -32,8 +32,7 @@ public class DistanceAutonomous extends AutoState {
 		return distanceTraveled > distance;
 	}
 	
-	//this allows us to calculate how far
-	//the robot has traveled since a MotorOutput.
+	// This allows us to calculate how far the robot has traveled since a MotorOutput.
 	private long lastFrameTime = 0;
 	
 	@Override
