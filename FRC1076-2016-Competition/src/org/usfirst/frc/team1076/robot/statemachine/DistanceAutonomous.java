@@ -52,7 +52,7 @@ public class DistanceAutonomous extends AutoState {
 		}
 	}
 	
-	public double getDistanceTraveled(){
+	public double getDistanceTraveled() {
 		return distanceTraveled;
 	}
 	
