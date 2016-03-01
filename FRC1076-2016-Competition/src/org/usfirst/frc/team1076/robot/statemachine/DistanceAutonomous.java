@@ -6,24 +6,15 @@ import org.usfirst.frc.team1076.robot.gamepad.IInput.MotorOutput;
 // import org.usfirst.frc.team1076.udp.SensorData;
 
 public class DistanceAutonomous extends AutoState {
-
-	
-	// GOAL: Drive the robot a specified distance in a specified time. This uses external data from the accelerometer,
-	// encoder, or calibrated factors based on the motors.
-	
-	// Assuming calibrated factors for now.
-	// ASSUMPTIONS: The motors move at a constant speed given a particular MotorOutput()
-	// and  that MotorOutputs are periodic.
-	
 	double MOTOR_FACTOR = 1; // TODO: Find a reasonable value for this.
 	
 	double speed;
 	double distanceTraveled = 0;
 	double distance;
 	
-	public DistanceAutonomous(double distance, double time) {
+	public DistanceAutonomous(double distance, double speed) {
 		this.distance = distance;
-		this.speed = distance / time;
+		this.speed = speed;
 	}
 
 	
@@ -32,13 +23,12 @@ public class DistanceAutonomous extends AutoState {
 
 	@Override
 	public boolean shouldChange() {
-		// TODO Auto-generated method stub
-
 		return distanceTraveled > distance;
 	}
-
-	// time, in seconds of how often DistanceAutonomous is called.
-	private long lastFrameTime = 0; // TODO: Find a reasonable value for this
+	
+	//this allows us to calculate how far
+	//the robot has traveled since a MotorOutput.
+	private long lastFrameTime = 0;
 	
 	@Override
 	public MotorOutput driveTrainSpeed() {
