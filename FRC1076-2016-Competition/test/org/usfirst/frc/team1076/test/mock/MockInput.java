@@ -4,10 +4,12 @@ import org.usfirst.frc.team1076.robot.gamepad.IInput;
 
 public class MockInput implements IInput {
 
-	public double left, right, arm, intake;
+	public double left, right, arm, intake, extend;
+	public IntakeRaiseState raiseState = IntakeRaiseState.Neutral;
 	
 	public void reset() {
-		left = right = arm = intake = 0;
+		left = right = arm = intake = extend = 0;
+		raiseState = IntakeRaiseState.Neutral;
 	}
 	
 	@Override
@@ -23,5 +25,15 @@ public class MockInput implements IInput {
 	@Override
 	public double intakeSpeed() {
 		return intake;
+	}
+
+	@Override
+	public double armExtendSpeed() {
+		return extend;
+	}
+
+	@Override
+	public IntakeRaiseState intakeRaiseState() {
+		return raiseState;
 	}
 }

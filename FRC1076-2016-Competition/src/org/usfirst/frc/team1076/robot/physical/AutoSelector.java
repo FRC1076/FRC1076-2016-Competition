@@ -11,9 +11,6 @@ import org.usfirst.frc.team1076.udp.SensorData.FieldPosition;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-//import edu.wpi.first.wpilibj.buttons.Button;
-//import edu.wpi.first.wpilibj.command.Command;
-
 public class AutoSelector implements IAutoSelector {
 	//Button button;
 	public AutoSelector() {

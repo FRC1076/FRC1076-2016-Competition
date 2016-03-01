@@ -25,4 +25,14 @@ public class TankInput implements IInput {
 	public double intakeSpeed() {
 		return 0;
 	}
+
+	@Override
+	public double armExtendSpeed() {
+		return 0;
+	}
+
+	@Override
+	public IntakeRaiseState intakeRaiseState() {
+		return IntakeRaiseState.Neutral;
+	}
 }

@@ -1,7 +1,7 @@
 package org.usfirst.frc.team1076.robot.gamepad;
 
 public interface IGamepad {
-	enum GamepadButton {
+	public enum GamepadButton {
 		A(1),
 		B(2),
 		X(3),
@@ -23,7 +23,7 @@ public interface IGamepad {
 		}
 	}
 	
-	enum GamepadAxis {
+	public enum GamepadAxis {
 		LeftX(0),
 		LeftY(1),
 		LeftTrigger(2),

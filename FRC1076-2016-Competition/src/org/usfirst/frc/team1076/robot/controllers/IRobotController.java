@@ -8,4 +8,6 @@ public interface IRobotController {
     public void autonomousPeriodic(IRobot robot);
     public void teleopInit(IRobot robot);
     public void teleopPeriodic(IRobot robot);
+    public void testInit(IRobot robot);
+    public void testPeriodic(IRobot robot);
 }

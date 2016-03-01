@@ -10,7 +10,13 @@ public interface IInput {
 		}
 	}
 	
+	enum IntakeRaiseState { Lowered, Raised, Neutral }
+	
 	MotorOutput driveTrainSpeed();
+	
 	double armSpeed();
+	double armExtendSpeed();
+	
 	double intakeSpeed();
+	IntakeRaiseState intakeRaiseState();
 }
