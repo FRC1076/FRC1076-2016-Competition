@@ -51,6 +51,11 @@ public class DistanceAutonomous extends AutoState {
 			return new MotorOutput(speed, speed);
 		}
 	}
+	
+	public double getDistanceTraveled(){
+		return distanceTraveled;
+	}
+	
 
 	@Override
 	public double armSpeed() {
