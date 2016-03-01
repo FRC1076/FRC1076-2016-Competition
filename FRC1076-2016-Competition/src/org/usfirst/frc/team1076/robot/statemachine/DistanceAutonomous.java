@@ -5,6 +5,12 @@ import org.usfirst.frc.team1076.robot.gamepad.IInput.MotorOutput;
 // TODO: Actually use SensorData to change motor output
 // import org.usfirst.frc.team1076.udp.SensorData;
 
+/**
+ * DistanceAutonomous takes a distance and speed parameter and outputs
+ * MotorOutputs until the distance has been traveled. It currently assumes
+ * that the motor travels at a constant speed. This should be changed to use an
+ * encoder or accelerometer in the future.
+ * */
 public class DistanceAutonomous extends AutoState {
 	double MOTOR_FACTOR = 1; // TODO: Find a reasonable value for this.
 	
