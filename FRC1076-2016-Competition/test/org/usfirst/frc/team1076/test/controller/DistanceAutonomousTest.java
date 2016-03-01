@@ -46,7 +46,7 @@ public class DistanceAutonomousTest {
 
 		motorOutput = auto.driveTrainSpeed();
 		
-		// The robot has travel the distance and should stop.
+		// The robot should stop by now.
 		assertEquals(true, auto.shouldChange());
 		assertEquals(0, motorOutput.left, EPSILON);
 		assertEquals(0, motorOutput.right, EPSILON);
