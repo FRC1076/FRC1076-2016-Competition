@@ -28,7 +28,7 @@ public class DistanceAutonomousTest {
 	
 	@Test
 	public void testFixedDistanceTraveled() {
-		DistanceAutonomous auto = new DistanceAutonomous(1.5, 1);
+		DistanceAutonomous auto = new DistanceAutonomous(.15, 1);
 		MotorOutput motorOutput = auto.driveTrainSpeed();
 		
 		// We haven't driven far enough yet, so the robot should still be moving.
@@ -37,20 +37,22 @@ public class DistanceAutonomousTest {
 		assertEquals(1, motorOutput.right, EPSILON);
 		
 		
-		// Sleep for a few seconds to allow the robot to move forward.
-		try {
-		    Thread.sleep(1500);                
-		} catch(InterruptedException ex) {
-		    Thread.currentThread().interrupt();
-		}
+		// Sleep in many small increments for
+		for (int i = 0; i < 10; i++) {
+			try {
+				Thread.sleep(20);
+			} catch(InterruptedException ex) {
+				Thread.currentThread().interrupt();
+			}
 
-		motorOutput = auto.driveTrainSpeed();
+			motorOutput = auto.driveTrainSpeed();
+		}
 		
 		// The robot should stop by now.
 		assertEquals(true, auto.shouldChange());
 		assertEquals(0, motorOutput.left, EPSILON);
 		assertEquals(0, motorOutput.right, EPSILON);
-		assertEquals(1.5, auto.getDistanceTraveled(), 0.1);
+		assertEquals(.15, auto.getDistanceTraveled(), 0.02);
 	}
 	
 	@Test
@@ -60,14 +62,14 @@ public class DistanceAutonomousTest {
 			auto.driveTrainSpeed();
 			
 			try {
-			    Thread.sleep(1000);                
+			    Thread.sleep(100);                
 			} catch(InterruptedException ex) {
 			    Thread.currentThread().interrupt();
 			}
 
 			auto.driveTrainSpeed();
 
-			assertEquals(speed, auto.getDistanceTraveled(), 0.1);
+			assertEquals(speed * 0.1, auto.getDistanceTraveled(), 0.1);
 		}
 	}
 	

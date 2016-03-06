@@ -37,6 +37,10 @@ public class DistanceAutonomous extends AutoState {
 	
 	@Override
 	public MotorOutput driveTrainSpeed() {
+		if (shouldChange()) {
+			return new MotorOutput(0, 0);
+		}
+
 		if (lastFrameTime == 0) {
 			lastFrameTime = System.nanoTime(); 
 		}
@@ -45,11 +49,7 @@ public class DistanceAutonomous extends AutoState {
 		
 		distanceTraveled += speed * MOTOR_FACTOR * deltaTime;
 		
-		if (shouldChange()) {
-			return new MotorOutput(0, 0);
-		} else {
-			return new MotorOutput(speed, speed);
-		}
+		return new MotorOutput(speed, speed);
 	}
 	
 	public double getDistanceTraveled() {
