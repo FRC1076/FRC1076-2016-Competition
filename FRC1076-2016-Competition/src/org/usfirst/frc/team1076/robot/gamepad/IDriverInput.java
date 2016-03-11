@@ -1,7 +1,7 @@
 package org.usfirst.frc.team1076.robot.gamepad;
 
 public interface IDriverInput {
-	class MotorOutput {
+	public class MotorOutput {
 		public final double left, right;
 		
 		public MotorOutput(double left, double right) {
@@ -12,4 +12,9 @@ public interface IDriverInput {
 	
 	MotorOutput driveTrainSpeed();
 	boolean brakesApplied();
+	boolean shiftHigh();
+	boolean shiftLow();
+	
+	enum ControlSide { Left, Right, Current }
+	ControlSide controlSide();
 }

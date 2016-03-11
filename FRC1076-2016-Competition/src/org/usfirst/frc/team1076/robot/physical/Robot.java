@@ -1,14 +1,18 @@
 
 package org.usfirst.frc.team1076.robot.physical;
 
+import org.usfirst.frc.team1076.robot.AbstractSolenoid;
 import org.usfirst.frc.team1076.robot.IRobot;
 import org.usfirst.frc.team1076.robot.controllers.AutoController;
 import org.usfirst.frc.team1076.robot.controllers.IRobotController;
 import org.usfirst.frc.team1076.robot.controllers.TeleopController;
 import org.usfirst.frc.team1076.robot.controllers.TestController;
+import org.usfirst.frc.team1076.robot.gamepad.ArcadeInput;
 import org.usfirst.frc.team1076.robot.gamepad.IDriverInput;
+import org.usfirst.frc.team1076.robot.gamepad.IDriverInput.MotorOutput;
 import org.usfirst.frc.team1076.robot.gamepad.IGamepad;
 import org.usfirst.frc.team1076.robot.gamepad.IOperatorInput;
+import org.usfirst.frc.team1076.robot.gamepad.IOperatorInput.IntakeRaiseState;
 import org.usfirst.frc.team1076.robot.gamepad.OperatorInput;
 import org.usfirst.frc.team1076.robot.gamepad.TankInput;
 import org.usfirst.frc.team1076.robot.statemachine.NothingAutonomous;
@@ -19,7 +23,6 @@ import org.usfirst.frc.team1076.udp.SensorData.FieldPosition;
 
 import edu.wpi.first.wpilibj.CANTalon;
 import edu.wpi.first.wpilibj.Compressor;
-import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -32,12 +35,12 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * directory.
  */
 public class Robot extends IterativeRobot implements IRobot {
-	static final int LEFT_INDEX = 0;
-	static final int LEFT_SLAVE_INDEX = 1;
-	static final int RIGHT_INDEX = 2;
-	static final int RIGHT_SLAVE_INDEX = 3;
-	static final int INTAKE_INDEX = 4;
-	static final int ARM_INDEX = 5;
+	static final int LEFT_INDEX = 3;
+	static final int LEFT_SLAVE_INDEX = 4;
+	static final int RIGHT_INDEX = 1;
+	static final int RIGHT_SLAVE_INDEX = 2;
+	static final int INTAKE_INDEX = 5;
+	static final int ARM_INDEX = 6;
 	
 	double MOTOR_POWER_FACTOR = 1.11;
 	
@@ -50,17 +53,21 @@ public class Robot extends IterativeRobot implements IRobot {
 	Servo lidarServo = new Servo(0);
 	
 	Compressor compressor = new Compressor(0);
-	DoubleSolenoid intakePneumatic = new DoubleSolenoid(0, 1);
+	AbstractSolenoid intakePneumatic = new OneSolenoid(1);
+	AbstractSolenoid shifterPneumatic = new OneSolenoid(0);
 	
 	IRobotController teleopController;
 	IRobotController autoController;
 	IRobotController testController;
 	
-	double robotSpeed = 0.5;
-	double armSpeed = 0.5;
-	double intakeSpeed = 0.5;
+	double robotSpeed = 1;
+	double armSpeed = 1;
+	double intakeSpeed = 1;
+	double upperGearThreshold = 0.6;
+	double lowerGearThreshold = 0.4;
 	
 	SensorData sensorData;
+	GearShifter gearShifter;
 	
     /**
      * This function is run when the robot is first started up and should be
@@ -69,26 +76,27 @@ public class Robot extends IterativeRobot implements IRobot {
 	@Override
     public void robotInit() {
     	SmartDashboard.putNumber("LIDAR Speed", 80);		
-//    	SmartDashboard.putNumber("Motor Tweak", MOTOR_POWER_FACTOR);
+    	// SmartDashboard.putNumber("Motor Tweak", MOTOR_POWER_FACTOR);
 		
 		// Initialize the physical components before the controllers,
 		// in case they depend on them.
 		// rightSlave.changeControlMode(TalonControlMode.Follower);
 		// rightSlave.set(RIGHT_INDEX);
-		rightSlave.setInverted(true);
-		rightMotor.setInverted(true);
+		leftSlave.setInverted(true);
+		leftMotor.setInverted(true);
 		
 		// leftSlave.changeControlMode(TalonControlMode.Follower);
 		// leftSlave.set(LEFT_INDEX);
 		
 		compressor.setClosedLoopControl(true);
-		intakePneumatic.set(DoubleSolenoid.Value.kOff);
+		intakePneumatic.setNeutral();
 		
 		IGamepad driverGamepad = new Gamepad(0);
 		IGamepad operatorGamepad = new Gamepad(1);
-		IDriverInput driver = new TankInput(driverGamepad);
+		IDriverInput tank = new TankInput(driverGamepad);
+		IDriverInput arcade = new ArcadeInput(driverGamepad);
 		IOperatorInput operator = new OperatorInput(operatorGamepad);
-		teleopController = new TeleopController(driver, operator);
+		teleopController = new TeleopController(arcade, operator, tank, arcade);
 		autoController = new AutoController(new NothingAutonomous());
 		testController = new TestController(driverGamepad);
 
@@ -110,8 +118,12 @@ public class Robot extends IterativeRobot implements IRobot {
     		System.out.println("Test Controller on Robot is null in robotInit()");
     	}
     	
+    	
 		IChannel channel = new Channel(5880);
-		sensorData = new SensorData(channel, FieldPosition.Right);    }
+		sensorData = new SensorData(channel, FieldPosition.Right);
+		
+		gearShifter = new GearShifter();
+	}
     
 	/**
 	 * This autonomous (along with the chooser code above) shows how to select between different autonomous modes
@@ -240,5 +252,43 @@ public class Robot extends IterativeRobot implements IRobot {
 	@Override
 	public SensorData getSensorData() {
 		return sensorData;
+	}
+
+	@Override
+	public void setGear(SolenoidValue value) {
+		switch (value) {
+		case Forward:
+			shifterPneumatic.setForward();
+			break;
+		case Reverse:
+			shifterPneumatic.setReverse();
+			break;
+		case Off:
+		default:
+			shifterPneumatic.setNeutral();
+			break;
+		}
+	}
+
+	@Override
+	public MotorOutput getMotorSpeed() {
+		MotorOutput currentOutput = new MotorOutput(leftMotor.getSpeed(), rightMotor.getSpeed());
+		return currentOutput;
+	}
+
+	@Override
+	public void setIntakeElevation(IntakeRaiseState state) {
+		switch (state) {
+		case Lowered:
+			intakePneumatic.setForward();
+			break;
+		case Raised:
+			intakePneumatic.setReverse();
+			break;
+		case Neutral:
+		default:
+			intakePneumatic.setNeutral();
+			break;
+		}
 	}
 }
