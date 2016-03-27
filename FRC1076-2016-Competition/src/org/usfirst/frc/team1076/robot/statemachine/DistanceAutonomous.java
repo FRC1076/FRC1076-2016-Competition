@@ -1,7 +1,7 @@
 package org.usfirst.frc.team1076.robot.statemachine;
 
 import org.usfirst.frc.team1076.robot.gamepad.IDriverInput.MotorOutput;
-import org.usfirst.frc.team1076.robot.sensors.IEncoder;
+import org.usfirst.frc.team1076.robot.sensors.IDistanceEncoder;
 
 /**
  * DistanceAutonomous takes a distance and speed parameter and outputs
@@ -9,12 +9,12 @@ import org.usfirst.frc.team1076.robot.sensors.IEncoder;
  * encoder to tell how far it has driven.
  * */
 public class DistanceAutonomous extends AutoState {
-	IEncoder encoder;
+	IDistanceEncoder encoder;
 	double encoderZeroPoint;
 	double speed;
 	double distance;
 
-	public DistanceAutonomous(double distance, double speed, IEncoder encoder) {
+	public DistanceAutonomous(double distance, double speed, IDistanceEncoder encoder) {
 		this.distance = distance;
 		this.speed = speed;
 		this.encoder = encoder;

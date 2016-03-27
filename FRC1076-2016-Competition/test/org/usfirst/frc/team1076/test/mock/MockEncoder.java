@@ -1,8 +1,8 @@
 package org.usfirst.frc.team1076.test.mock;
 
-import org.usfirst.frc.team1076.robot.sensors.IEncoder;
+import org.usfirst.frc.team1076.robot.sensors.IDistanceEncoder;
 
-public class MockEncoder implements IEncoder {
+public class MockEncoder implements IDistanceEncoder {
 	public double distance;
 	public double rawCount;
 	public double encoderRate;

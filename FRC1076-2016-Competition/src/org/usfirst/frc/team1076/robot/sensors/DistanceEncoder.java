@@ -2,10 +2,9 @@ package org.usfirst.frc.team1076.robot.sensors;
 
 import org.usfirst.frc.team1076.robot.sensors.GearShiftStateManager.GearStates;
 
-public class DistanceEncoder implements IEncoder {	
+public class DistanceEncoder implements IDistanceEncoder {	
 	IEncoder encoder;
 	GearShiftStateManager gearShifter;
-	GearStates currentGear;
 	double countAccumulator = 0; 
 	double totalDistance = 0;
 	
@@ -18,14 +17,13 @@ public class DistanceEncoder implements IEncoder {
 	public DistanceEncoder(IEncoder encoder, GearShiftStateManager gearShifter) {
 		this.encoder = encoder;
 		this.gearShifter = gearShifter;
-		this.currentGear = gearShifter.getGearState();
 	}
 	
 	public void updateDistance() {
 		// This function should be called often.
 		double deltaCount = getRaw() - countAccumulator;
 		double deltaDistance = deltaCount * MOTOR_PERIOD * WHEEL_CIRCUMFRENCE;
-		currentGear = gearShifter.getGearState();
+		GearStates currentGear = gearShifter.getGearState();
 		countAccumulator = getRaw();
 		
 		// Add the distance traveled since last time we checked.
@@ -51,7 +49,6 @@ public class DistanceEncoder implements IEncoder {
 		encoder.reset();
 		countAccumulator = 0;
 		totalDistance = 0;
-		currentGear = null;
 	}
 
 	@Override
