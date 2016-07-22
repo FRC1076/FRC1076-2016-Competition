@@ -14,11 +14,13 @@ public class ArcadeInput implements IDriverInput {
 	public MotorOutput driveTrainSpeed() {
 		double speed = gamepad.getAxis(GamepadAxis.RightY);
 		double turn = gamepad.getAxis(GamepadAxis.LeftX);
+		double left = speed - (turn*0.75);
+		double right = speed + (turn*0.75);
 		// We multiply by the 1 - |speed|/2 so that we run full speed when it's only turning,
 		// but when we're driving and turning we are centered around 0.5 (producing a 0 and 1).
 		// This ensures we can drive fast and turn at full power.
-		double left = (speed - turn) * (1 - 0.5 * Math.abs(speed));
-		double right = (speed + turn) * (1 - 0.5 * Math.abs(speed));
+		//		double left = (speed - turn) * (1 - 0.5 * Math.abs(speed));
+		//		double right = (speed + turn) * (1 - 0.5 * Math.abs(speed));
 		return new MotorOutput(left, right);
 	}
 
@@ -48,7 +50,8 @@ public class ArcadeInput implements IDriverInput {
 		}
 	}
 
+	@Override
 	public boolean turboArm() {
-		return gamepad.getButton(GamepadButton.B);
+		return gamepad.getButton(GamepadButton.A);
 	}
 }

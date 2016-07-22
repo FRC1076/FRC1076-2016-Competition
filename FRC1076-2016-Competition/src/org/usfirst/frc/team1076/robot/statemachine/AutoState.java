@@ -1,4 +1,5 @@
 package org.usfirst.frc.team1076.robot.statemachine;
+import org.usfirst.frc.team1076.robot.controllers.IRobotController.ArmPneumaticState;
 import org.usfirst.frc.team1076.robot.gamepad.IDriverInput.MotorOutput;
 import org.usfirst.frc.team1076.robot.gamepad.IOperatorInput.IntakeRaiseState;
 
@@ -51,4 +52,8 @@ public abstract class AutoState {
 	public IntakeRaiseState intakeRaiseState() {
 		return IntakeRaiseState.Neutral;
 	}
+
+    public ArmPneumaticState armPneumatic() {
+        return ArmPneumaticState.On;
+    }
 }

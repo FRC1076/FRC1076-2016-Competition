@@ -1,4 +1,5 @@
 package org.usfirst.frc.team1076.robot;
+import org.usfirst.frc.team1076.robot.controllers.IRobotController.ArmPneumaticState;
 import org.usfirst.frc.team1076.robot.gamepad.IDriverInput.MotorOutput;
 import org.usfirst.frc.team1076.robot.gamepad.IOperatorInput.IntakeRaiseState;
 import org.usfirst.frc.team1076.udp.ISensorData;
@@ -16,4 +17,5 @@ public interface IRobot {
 	ISensorData getSensorData(); 
 	void setGear(SolenoidValue value);
 	MotorOutput getMotorSpeed();
+    void setArmPneumatic(ArmPneumaticState state);
 }

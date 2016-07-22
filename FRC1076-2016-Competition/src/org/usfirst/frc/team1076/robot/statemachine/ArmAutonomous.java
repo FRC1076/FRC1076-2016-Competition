@@ -2,6 +2,8 @@ package org.usfirst.frc.team1076.robot.statemachine;
 
 import java.util.concurrent.TimeUnit;
 
+import org.usfirst.frc.team1076.robot.controllers.IRobotController.ArmPneumaticState;
+
 public class ArmAutonomous extends AutoState {
 	public enum LiftDirection {
 		Up, Down
@@ -47,5 +49,10 @@ public class ArmAutonomous extends AutoState {
 	    default:
 	        return 0;
 	    }
+	}
+	
+	@Override
+	public ArmPneumaticState armPneumatic() {
+	    return ArmPneumaticState.Off;
 	}
 }

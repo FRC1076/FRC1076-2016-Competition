@@ -3,6 +3,7 @@ package org.usfirst.frc.team1076.test.controller;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
+import org.usfirst.frc.team1076.robot.controllers.IRobotController.ArmPneumaticState;
 import org.usfirst.frc.team1076.robot.gamepad.IDriverInput.MotorOutput;
 import org.usfirst.frc.team1076.robot.statemachine.ArmAutonomous;
 import org.usfirst.frc.team1076.robot.statemachine.ArmAutonomous.LiftDirection;
@@ -20,7 +21,7 @@ public class ArmAutonomousTest {
 		assertEquals(1.0, auto.armSpeed(), EPSILON);
 
 		try {
-			Thread.sleep(100);
+			Thread.sleep(200);
 		} catch (InterruptedException e) {
 		}
 
@@ -41,5 +42,12 @@ public class ArmAutonomousTest {
 		MotorOutput motorOutput = auto.driveTrainSpeed();
 		assertEquals(0.0, motorOutput.left, EPSILON);
 		assertEquals(0.0, motorOutput.right, EPSILON);
+	}
+	
+	@Test
+	public void testPneumatic() {
+	    AutoState auto = new ArmAutonomous(1, 1.0, LiftDirection.Up);
+	    ArmPneumaticState state = auto.armPneumatic();
+	    assertEquals(ArmPneumaticState.Off, auto.armPneumatic());
 	}
 }

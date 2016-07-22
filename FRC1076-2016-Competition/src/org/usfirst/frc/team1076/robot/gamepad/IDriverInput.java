@@ -15,7 +15,7 @@ public interface IDriverInput {
 	boolean shiftHigh();
 	boolean shiftLow();
 	
-	enum ControlSide { Left, Right, Current }
+	public enum ControlSide { Left, Right, Current }
 	ControlSide controlSide();
 	boolean turboArm();
 }

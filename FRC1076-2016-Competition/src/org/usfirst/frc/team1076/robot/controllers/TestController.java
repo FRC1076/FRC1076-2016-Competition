@@ -107,4 +107,10 @@ public class TestController implements IRobotController {
 		}
 	}
 
+    @Override
+    public boolean replayActivated() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
 }

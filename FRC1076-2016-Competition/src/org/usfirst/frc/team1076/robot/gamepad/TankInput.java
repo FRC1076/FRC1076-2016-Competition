@@ -42,8 +42,9 @@ public class TankInput implements IDriverInput {
 			return ControlSide.Current;
 		}
 	}
-	
+
+	@Override
 	public boolean turboArm() {
-		return gamepad.getButton(GamepadButton.B);
+		return gamepad.getButton(GamepadButton.A);
 	}
 }

@@ -7,10 +7,11 @@ public class MockDriverInput implements IDriverInput {
 	public boolean brakes;
 	public ControlSide controlSide = ControlSide.Current;
 	public boolean turboArm;
+	public boolean shift_low, shift_high;
 	
 	public void reset() {
 		left = right = 0;
-		brakes = false;
+		turboArm = shift_low = shift_high = brakes = false;
 	}
 	
 	@Override
@@ -25,12 +26,12 @@ public class MockDriverInput implements IDriverInput {
 
 	@Override
 	public boolean shiftHigh() {
-		return false;
+		return shift_high;
 	}
 
 	@Override
 	public boolean shiftLow() {
-		return false;
+		return shift_low;
 	}
 	
 	@Override

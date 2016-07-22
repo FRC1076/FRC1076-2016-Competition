@@ -51,7 +51,7 @@ public class OperatorInputTest {
 			double ext = i / 100.0;
 			gamepad.ly = ext;
 			assertEquals("The arm extension should be driven by the left stick",
-					ext, input.armExtendSpeed(), EPSILON);
+					-ext, input.armExtendSpeed(), EPSILON);
 		}
 	}
 	
@@ -74,13 +74,13 @@ public class OperatorInputTest {
 				IntakeRaiseState.Neutral, input.intakeRaiseState());
 		gamepad.lb = true;
 		assertEquals("The left trigger means ball intake up",
-				IntakeRaiseState.Lowered, input.intakeRaiseState());
+				IntakeRaiseState.Raised, input.intakeRaiseState());
 		gamepad.rb = true;
 		assertEquals("Both triggers pressed means neutral state",
 				IntakeRaiseState.Neutral, input.intakeRaiseState());
 		gamepad.lb = false;
 		assertEquals("The right trigger means ball intake down",
-				IntakeRaiseState.Raised, input.intakeRaiseState());
+				IntakeRaiseState.Lowered, input.intakeRaiseState());
 		gamepad.rb = false;
 		assertEquals("Neither trigger pressed means neutral state",
 				IntakeRaiseState.Neutral, input.intakeRaiseState());

@@ -33,7 +33,7 @@
 	
 	<target name="build" depends="clean">
 		<mkdir dir="${robot.build.dir}"/>
-		<javac srcdir="${robot.src.dir}" destdir="${robot.build.dir}"
+		<javac srcdir="${robot.src.dir}" destdir="${robot.build.dir}" debug="on"
 				includeantruntime="false">
 			<exclude name="**/physical/*"/>
 			<classpath refid="classpath.base"/>

@@ -1,12 +1,13 @@
 package org.usfirst.frc.team1076.robot.gamepad;
 
 public interface IOperatorInput {
-	enum IntakeRaiseState { Lowered, Raised, Neutral }
+	public enum IntakeRaiseState { Lowered, Raised, Neutral }
 
 	IntakeRaiseState intakeRaiseState();
 	double intakeSpeed();
 	
 	double armExtendSpeed();
 	double armSpeed();
-	boolean operatorTurbo();
+	boolean turboArm();
+    boolean replayButtonHeld();
 }

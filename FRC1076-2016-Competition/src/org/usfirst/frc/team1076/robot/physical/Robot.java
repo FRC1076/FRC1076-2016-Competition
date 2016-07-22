@@ -2,9 +2,16 @@
 package org.usfirst.frc.team1076.robot.physical;
 
 import org.usfirst.frc.team1076.robot.ISolenoid;
+
+import java.io.EOFException;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
 import org.usfirst.frc.team1076.robot.IRobot;
 import org.usfirst.frc.team1076.robot.controllers.AutoController;
 import org.usfirst.frc.team1076.robot.controllers.IRobotController;
+import org.usfirst.frc.team1076.robot.controllers.IRobotController.ArmPneumaticState;
 import org.usfirst.frc.team1076.robot.controllers.TeleopController;
 import org.usfirst.frc.team1076.robot.controllers.TestController;
 import org.usfirst.frc.team1076.robot.gamepad.ArcadeInput;
@@ -13,6 +20,9 @@ import org.usfirst.frc.team1076.robot.gamepad.IDriverInput.MotorOutput;
 import org.usfirst.frc.team1076.robot.gamepad.IGamepad;
 import org.usfirst.frc.team1076.robot.gamepad.IOperatorInput;
 import org.usfirst.frc.team1076.robot.gamepad.IOperatorInput.IntakeRaiseState;
+import org.usfirst.frc.team1076.robot.recordAndReplay.RecordController;
+import org.usfirst.frc.team1076.robot.recordAndReplay.ReplayController;
+import org.usfirst.frc.team1076.robot.recordAndReplay.ReplayInput;
 import org.usfirst.frc.team1076.robot.gamepad.OperatorInput;
 import org.usfirst.frc.team1076.robot.gamepad.TankInput;
 import org.usfirst.frc.team1076.robot.sensors.DistanceEncoder;
@@ -51,7 +61,6 @@ public class Robot extends IterativeRobot implements IRobot {
 	static final int RIGHT_INDEX = 1;
 	static final int RIGHT_FOLLOWER_INDEX = 2;
 	static final int INTAKE_INDEX = 5;
-	// None of the below indexes are correct.
 	static final int ARM_EXTEND_INDEX = 9;
 	static final int ARM_EXTEND_FOLLOWER_INDEX = 6;
 	static final int ARM_INDEX = 7;
@@ -72,12 +81,19 @@ public class Robot extends IterativeRobot implements IRobot {
 	Compressor compressor = new Compressor(0);
 	ISolenoid intakePneumatic = new TwoSolenoid(1, 3);
 	ISolenoid shifterPneumatic = new TwoSolenoid(0, 2);
+	ISolenoid brakePneumatic = new OneSolenoid(4);
 	IDistanceEncoder encoder;
 	
 	IRobotController teleopController;
 	IRobotController autoController;
 	IRobotController testController;
-	
+
+	File file = new File(System.getProperty("user.home") + "/" + "recording");
+	RecordController recordController;
+	ReplayController replayController;
+	boolean recordingInTest = true;
+	boolean replayEnabled = true;
+	boolean currentlyReplaying = false;
 	double robotSpeed = 1;
 	double intakeSpeed = 1;
 //	double armUpSpeed = 0.4;
@@ -101,7 +117,13 @@ public class Robot extends IterativeRobot implements IRobot {
 	@Override
 	public void disabledInit() {
 		setBrakes(true);
+		setArmPneumatic(ArmPneumaticState.Off);
+		if (recordingInTest && recordController.isRecording()) {
+		    System.out.println("End of recording.");
+		    recordController.stopRecording();
+		}
 	}
+	
 	
     /**
      * This function is run when the robot is first started up and should be
@@ -110,7 +132,7 @@ public class Robot extends IterativeRobot implements IRobot {
 	@Override
     public void robotInit() {
 		SmartDashboard.putBoolean("Low Bar", false);
-		SmartDashboard.putBoolean("Backwards", false);		
+		SmartDashboard.putBoolean("Backwards", false);
     	SmartDashboard.putNumber("LIDAR Speed", 80);
     	SmartDashboard.putNumber("Motor Tweak", MOTOR_POWER_FACTOR);
     	SmartDashboard.putString("Enemy Color", "red");
@@ -129,19 +151,11 @@ public class Robot extends IterativeRobot implements IRobot {
 		leftFollower.setInverted(true);
 		leftMotor.setInverted(true);
 //		armExtendMotor.setInverted(false);
-//		armExtendMotor.setInverted(false); //NO changes
 		armMotor.enableBrakeMode(true);
 		armFollower.enableBrakeMode(true);
 		armExtendMotor.enableBrakeMode(true);
 		armExtendFollower.enableBrakeMode(true);
 
-		
-//		armMotor.ConfigFwdLimitSwitchNormallyOpen(true);
-//		armMotor.ConfigRevLimitSwitchNormallyOpen(true);
-//		armMotor.enableLimitSwitch(true, true);
-//		armFollower.ConfigFwdLimitSwitchNormallyOpen(true);
-//		armFollower.ConfigRevLimitSwitchNormallyOpen(true);
-//		armFollower.enableLimitSwitch(true, true);
 		armExtendMotor.ConfigFwdLimitSwitchNormallyOpen(true);
 		armExtendMotor.ConfigRevLimitSwitchNormallyOpen(true);
 		armExtendMotor.enableLimitSwitch(true, true);
@@ -151,12 +165,13 @@ public class Robot extends IterativeRobot implements IRobot {
 		
 		armExtendFollower.changeControlMode(CANTalon.TalonControlMode.Follower);
 		armExtendFollower.set(ARM_EXTEND_INDEX);
-//		System.out.println("Enabled all limit switches");
 		// leftFollower.changeControlMode(TalonControlMode.Follower);
 		// leftFollower.set(LEFT_INDEX);
 		
 		compressor.setClosedLoopControl(true);
-		setIntakeElevation(IntakeRaiseState.Lowered); //TODO: the lable for lowered and raised is swaped incorrectly!
+
+		setIntakeElevation(IntakeRaiseState.Raised);
+		setArmPneumatic(ArmPneumaticState.On);
 		
 		IGamepad driverGamepad = new Gamepad(0);
 		gearShifter.shiftLow(this);
@@ -164,14 +179,37 @@ public class Robot extends IterativeRobot implements IRobot {
 		IDriverInput tank = new TankInput(driverGamepad);
 		IDriverInput arcade = new ArcadeInput(driverGamepad);
 		IOperatorInput operator = new OperatorInput(operatorGamepad);
+		
+		// Record and Replay System
+		if (replayEnabled) {
+		    try {
+		        // Ensure the file exists
+		        if (!file.exists()) {
+		            file.createNewFile();
+		        }
+		    } catch (EOFException e) {
+		        System.err.println("Recording file empty!");
+		    } catch (IOException e) {
+		        throw new RuntimeException(e.toString());
+		    }
+
+		    try {
+		        ReplayInput replay = new ReplayInput(file);
+		        recordController = new RecordController(file, tank, operator);
+		        replayController = new ReplayController(replay);
+		    } catch (Exception e) {
+		        throw new RuntimeException(e.toString());
+		    }
+		}
 		teleopController = new TeleopController(tank, operator, tank, arcade);
-		encoder = new DistanceEncoder(new MotorEncoder(leftMotor), gearShifter);
 		autoController = new AutoController(new NothingAutonomous());
 		testController = new TestController(driverGamepad);
 		
+
 		IChannel channel = new Channel(5880);
+	    encoder = new DistanceEncoder(new MotorEncoder(leftMotor), gearShifter);
 		sensorData = new SensorData(channel, FieldPosition.Right, new Gyro(new AnalogGyro(0)));
-		// TODO: Figure out what analog input channel we'll be using.
+		// TODO: Figure out what analog input channel we'll be using. done??
 	}
     
 	/**
@@ -199,9 +237,11 @@ public class Robot extends IterativeRobot implements IRobot {
 		} else {
 			autoDriveDistance = SmartDashboard.getNumber("Distance");
 			lidarMotorSpeed = SmartDashboard.getNumber("Initial Lidar Speed");
+//			autoController = new AutoController(new ForwardAutonomous(2000, 0.75));
 			
-			autoController = new AutoController(new ForwardAutonomous(7000, 0.75)
-												.addNext(new ArmAutonomous(100, 0.5, LiftDirection.Down))); 
+			autoController = new AutoController(new ArmAutonomous(750, -0.25, LiftDirection.Down)
+												.addNext(new ForwardAutonomous(5000, 0.75))); 
+
 												//TODO: investigate forwards backwards stuff.
 //			autoController = new AutoController
 //					new ForwardAutonomous(600, -0.5)
@@ -253,12 +293,23 @@ public class Robot extends IterativeRobot implements IRobot {
 //        armFollower.ConfigFwdLimitSwitchNormallyOpen(true);
 
     	lidarMotorSpeed = SmartDashboard.getNumber("Initial Lidar Speed");
-    	
+        currentlyReplaying = false;
+        if (replayEnabled) {
+            ReplayInput replayInput = null;
+            try {
+                replayInput = new ReplayInput(file);
+            } catch (ClassNotFoundException | IOException e) {
+                e.printStackTrace();
+            }
+            replayController = new ReplayController(replayInput);
+            replayController.replayInit(this);
+        }
     	if (teleopController != null) {
     		teleopController.teleopInit(this);
     	} else {
     		System.out.println("Teleop Controller on Robot is null in teleopInit()");
     	}
+        setArmPneumatic(ArmPneumaticState.On);
     }
     
     /**
@@ -268,6 +319,14 @@ public class Robot extends IterativeRobot implements IRobot {
     public void teleopPeriodic() {
     	controlLidarMotor();
     	commonPeriodic();
+    	if (replayEnabled && teleopController.replayActivated() && !currentlyReplaying) {
+    	    System.out.println("Replaying...");
+    	    currentlyReplaying = true;
+    	}
+    	while (currentlyReplaying) {
+    	    replayController.replayPeriodic(this);
+    	    currentlyReplaying = replayController.replaying();
+    	}
     	
     	if (teleopController != null) {
         	teleopController.teleopPeriodic(this);
@@ -278,7 +337,10 @@ public class Robot extends IterativeRobot implements IRobot {
     
     @Override
     public void testInit() {
-    	if (testController != null) {
+
+        if (recordingInTest) {
+            recordInit();
+        } else if (testController != null) {
     		testController.testPeriodic(this);
     	} else {
     		System.err.println("Test Controller on Robot is null in testInit()");
@@ -288,8 +350,9 @@ public class Robot extends IterativeRobot implements IRobot {
     @Override
     public void testPeriodic() {
     	commonPeriodic();
-    	
-    	if (testController != null) {
+    	if (recordingInTest) {
+    	    recordPeriodic();
+    	} else if (testController != null) {
     		testController.testPeriodic(this);
     	} else {
     		System.err.println("Test Controller on Robot is null in testInit()");
@@ -311,7 +374,27 @@ public class Robot extends IterativeRobot implements IRobot {
     public void disabledPeriodic() {
     	commonPeriodic();
     }
+
+    public void recordInit() {
+        if (file.exists()) {
+            boolean deleted = file.delete();
+            try {
+                file.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            System.out.println("Deleted Previous File: " + deleted);
+        }
+        System.out.println("Now recording...");
+        teleopInit();
+        recordController.startRecording();
+    }
     
+    public void recordPeriodic() {
+        teleopPeriodic();
+        recordController.recordFrame();
+    }
+
 	@Override
 	public void setLeftSpeed(double speed) {
 		leftFollower.set(speed * MOTOR_POWER_FACTOR * robotSpeed);
@@ -390,16 +473,31 @@ public class Robot extends IterativeRobot implements IRobot {
 	public void setIntakeElevation(IntakeRaiseState state) {
 		switch (state) {
 		case Lowered:
-			intakePneumatic.setReverse();
+			intakePneumatic.setForward();
 			break;
 		case Raised:
-			intakePneumatic.setForward();
+			intakePneumatic.setReverse();
 			break;
 		case Neutral:
 		default:
 			intakePneumatic.setNeutral();
 			break;
 		}
+	}
+	
+	@Override
+	public void setArmPneumatic(ArmPneumaticState state) {
+	    switch (state) {
+	    case On:
+	        brakePneumatic.setForward();
+	        break;
+	    case Off:
+	        brakePneumatic.setReverse();
+	        break;
+	    default:
+	        brakePneumatic.setNeutral();
+	        break;
+	    }
 	}
 	
 	private void controlLidarMotor() {

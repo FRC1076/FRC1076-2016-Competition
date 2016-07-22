@@ -1,6 +1,7 @@
 package org.usfirst.frc.team1076.test.mock;
 
 import org.usfirst.frc.team1076.robot.IRobot;
+import org.usfirst.frc.team1076.robot.controllers.IRobotController.ArmPneumaticState;
 import org.usfirst.frc.team1076.robot.gamepad.IDriverInput.MotorOutput;
 import org.usfirst.frc.team1076.robot.gamepad.IOperatorInput.IntakeRaiseState;
 import org.usfirst.frc.team1076.udp.ISensorData;
@@ -11,6 +12,7 @@ public class MockRobot implements IRobot {
 	public boolean brakes;
 	public IntakeRaiseState intakeRaiseState = IntakeRaiseState.Neutral;
 	public SolenoidValue gear = SolenoidValue.Off;
+	public ArmPneumaticState armPneumaticState = ArmPneumaticState.On;
 	public ISensorData sensorData;
 	
 	@Override
@@ -67,4 +69,9 @@ public class MockRobot implements IRobot {
 	public void setArmExtendSpeed(double speed) {
 		this.extend = speed;
 	}
+
+    @Override
+    public void setArmPneumatic(ArmPneumaticState state) {
+        this.armPneumaticState = state;
+    }
 }

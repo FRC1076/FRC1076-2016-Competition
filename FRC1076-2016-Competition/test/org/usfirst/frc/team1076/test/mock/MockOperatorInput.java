@@ -5,7 +5,8 @@ import org.usfirst.frc.team1076.robot.gamepad.IOperatorInput;
 public class MockOperatorInput implements IOperatorInput {
 
 	public double arm, intake, extend;
-	public boolean operatorTurbo;
+	public boolean operatorTurbo, replayButton;
+
 	public IntakeRaiseState raiseState = IntakeRaiseState.Neutral;
 	
 	public void reset() {
@@ -34,7 +35,12 @@ public class MockOperatorInput implements IOperatorInput {
 	}
 
     @Override
-    public boolean operatorTurbo() {
+    public boolean turboArm() {
         return operatorTurbo;
+    }
+
+    @Override
+    public boolean replayButtonHeld() {
+        return replayButton;
     }
 }

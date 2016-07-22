@@ -23,6 +23,7 @@ public class AutoController implements IRobotController {
 	@Override
 	public void autonomousInit(IRobot robot) {
 		gearShifter.shiftLow(robot);
+		robot.setArmPneumatic(ArmPneumaticState.On);
 		if (autoState != null) {
 			autoState.init();
 		}
@@ -39,6 +40,7 @@ public class AutoController implements IRobotController {
 			}
 			autoState.init(); // Initialize the new autonomous mode
 		}
+		robot.setArmPneumatic(autoState.armPneumatic());
 		robot.setArmSpeed(autoState.armSpeed());
 		robot.setArmExtendSpeed(autoState.armExtendSpeed());
 		robot.setIntakeSpeed(autoState.intakeSpeed());
@@ -57,4 +59,10 @@ public class AutoController implements IRobotController {
 	public void testPeriodic(IRobot robot) {
 		// TODO Auto-generated method stub
 	}
+
+    @Override
+    public boolean replayActivated() {
+        // TODO Auto-generated method stub
+        return false;
+    }
 }
