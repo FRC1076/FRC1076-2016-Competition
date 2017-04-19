@@ -78,6 +78,10 @@ public class Robot extends IterativeRobot implements IRobot {
 	IRobotController autoController;
 	IRobotController testController;
 	
+	static final int ARM_LIMIT_SWITCH_CHANNEL = 0; //TODO: is this correct?
+	// TODO: ensure this is accurate (is the circuit open or closed when unpressed)?
+	LimitSwitch armLimitSwitch = new LimitSwitch(ARM_LIMIT_SWITCH_CHANNEL, false);
+
 	double robotSpeed = 1;
 	double intakeSpeed = 1;
 //	double armUpSpeed = 0.4;
@@ -305,6 +309,10 @@ public class Robot extends IterativeRobot implements IRobot {
     	SmartDashboard.putNumber("Left Encoder", leftMotor.getEncPosition());
     	SmartDashboard.putNumber("Right Encoder", rightMotor.getEncPosition());
     	SmartDashboard.putNumber("Vision Heading", sensorData.getVisionHeading());
+        // Don't let the arm go past the limit switch.
+        if (armLimitSwitch.isPressed() && armMotor.get() > 0) {
+            setArmSpeed(-1); //TODO: accurate values?
+        }
     }
 
     @Override
